@@ -65,22 +65,23 @@ section{padding:34px 0;}
 .section-head .rule{flex:1;height:1px;background:var(--border);}
 
 /* CATEGORY GRID */
-.cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-.cat-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;text-align:left;cursor:pointer;position:relative;font-family:'Kanit',sans-serif;transition:transform .12s;}
+.cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.cat-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:20px 18px;text-align:left;cursor:pointer;position:relative;font-family:'Kanit',sans-serif;transition:transform .12s;}
 .cat-card:active{transform:scale(.97);}
-.cat-card .tag{position:absolute;top:14px;right:14px;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;}
+.cat-card .tag{position:absolute;top:16px;right:16px;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;}
 .tag.day1{background:var(--green-bg);color:var(--green);}
 .tag.day2{background:var(--coral-bg);color:var(--coral);}
-.cat-card h3{font-size:22px;font-weight:800;color:var(--deep2);}
+.cat-card h3{font-size:26px;font-weight:800;color:var(--deep2);}
 .cat-card .full{font-size:12px;color:var(--ink-soft);margin-bottom:10px;}
 .cat-card .teams{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--ink);margin-bottom:6px;}
 .cat-card .prize1{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:800;color:var(--gold-dark);}
-.cat-card .tapview{margin-top:10px;font-size:11.5px;color:var(--magenta);font-weight:600;}
+.cat-card .tapview{margin-top:12px;display:flex;align-items:center;justify-content:space-between;font-size:12.5px;color:var(--magenta);font-weight:700;border:1.5px solid var(--magenta);border-radius:10px;padding:7px 11px;}
+.cat-card .tapview .arrow{font-size:15px;}
 
 /* MODAL */
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(10,10,30,.55);z-index:100;align-items:flex-end;justify-content:center;}
 .modal-bg.open{display:flex;}
-.modal{background:var(--paper);width:100%;max-width:640px;max-height:92vh;border-radius:20px 20px 0 0;overflow:hidden;display:flex;flex-direction:column;animation:slideup .22s ease;}
+.modal{background:var(--paper);width:100%;max-width:640px;max-height:92vh;border-radius:20px 20px 0 0;overflow:hidden;display:flex;flex-direction:column;animation:slideup .22s ease;position:relative;}
 @keyframes slideup{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
 .modal-head{background:linear-gradient(120deg,var(--deep2),var(--violet));color:#fff;padding:16px 18px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
 .modal-head h2{font-size:22px;font-weight:800;}
@@ -90,6 +91,9 @@ section{padding:34px 0;}
 .mtab{flex:1;padding:12px 6px;text-align:center;font-size:13px;font-weight:500;color:var(--ink-soft);background:none;border:none;border-bottom:3px solid transparent;cursor:pointer;font-family:'Kanit',sans-serif;}
 .mtab.active{color:var(--magenta);border-bottom-color:var(--magenta);font-weight:700;}
 .modal-body{overflow-y:auto;padding:16px 18px 30px;flex:1;}
+.tap-hint{position:absolute;top:110px;right:16px;background:var(--magenta);color:#fff;font-size:11px;font-weight:700;padding:6px 11px;border-radius:20px;box-shadow:0 4px 12px rgba(0,0,0,.28);animation:hintbounce 1.6s infinite;z-index:5;pointer-events:none;transition:opacity .3s;}
+.tap-hint.hide{opacity:0;}
+@keyframes hintbounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-4px);}}
 
 .grp-title{font-family:'JetBrains Mono',monospace;font-weight:800;font-size:12.5px;color:var(--coral);margin:16px 0 7px;}
 .grp-title:first-child{margin-top:0;}
@@ -103,6 +107,11 @@ table.stand tr:first-child td{font-weight:800;color:var(--green);background:var(
 .ko-match-wrap{margin-bottom:6px;}
 .ko-meta{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--ink-soft);margin-bottom:2px;padding-left:2px;}
 .ko-match{display:flex;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-size:13px;gap:8px;}
+.ko-match .team-block{flex:1;border:1.3px solid var(--border);border-radius:9px;padding:7px 10px;background:var(--paper);}
+.ko-match .team-block.win{border-color:var(--green);background:var(--green-bg);}
+.ko-match .team-block.draw{border-color:var(--gold);background:rgba(255,209,102,.14);}
+.ko-match .team-block .tname{display:block;margin-left:0;margin-top:2px;}
+.ko-match .team-block .proster{margin-top:3px;}
 .ko-match .t{flex:1;font-weight:600;}
 .ko-match .t.win{color:var(--green);}
 .ko-match .sc{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink-soft);white-space:nowrap;}
@@ -117,11 +126,12 @@ table.stand tr:first-child td{font-weight:800;color:var(--green);background:var(
 .tabbar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
 .tabbtn{font-family:'Kanit',sans-serif;font-size:13.5px;font-weight:500;padding:8px 16px;border-radius:999px;border:1px solid var(--border);background:var(--card);color:var(--ink-soft);cursor:pointer;}
 .tabbtn.active{background:var(--deep2);color:#fff;border-color:var(--deep2);}
-.sched-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-size:12px;color:var(--ink-soft);}
+.sched-meta{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px;font-size:12px;color:var(--ink-soft);flex-wrap:wrap;}
+.jump-select{font-family:'Kanit',sans-serif;font-size:12px;color:var(--ink);background:var(--card);border:1px solid var(--border);border-radius:8px;padding:5px 8px;flex:1;min-width:0;}
 .refresh-btn{font-family:'JetBrains Mono',monospace;font-size:11.5px;border:1px solid var(--border);background:var(--card);color:var(--ink);padding:6px 11px;border-radius:8px;cursor:pointer;}
 .sched-list{display:flex;flex-direction:column;gap:7px;}
 .sched-row{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:12.5px;}
-.sched-row.played{background:#eef0f3;}
+.sched-row.played{background:var(--green-bg);}
 .sched-row.played .r1{opacity:.75;}
 .sched-row .r1{display:flex;justify-content:space-between;color:var(--ink-soft);font-family:'JetBrains Mono',monospace;font-size:11px;margin-bottom:5px;}
 .sched-row .r2{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:500;}
@@ -152,13 +162,14 @@ table.stand tr:first-child td{font-weight:800;color:var(--green);background:var(
 .stand-matches span{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--ink-soft);background:var(--paper);border:1px solid var(--border);border-radius:4px;padding:1px 4px;}
 
 /* LIVE COURTS */
-.live-wrap{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;}
-.live-card{flex:0 0 auto;min-width:190px;background:var(--card);border:1.5px solid var(--coral);border-radius:12px;padding:11px 13px;position:relative;}
+.live-wrap{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.live-card{background:var(--card);border:1.5px solid var(--coral);border-radius:12px;padding:10px 12px;position:relative;}
+.live-card .lc-cat{font-size:11px;font-weight:700;color:var(--ink-soft);margin-bottom:4px;display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
 .live-card .lc-court{font-family:'JetBrains Mono',monospace;font-weight:800;font-size:12px;color:var(--coral);display:flex;align-items:center;gap:5px;margin-bottom:6px;}
 .live-card .lc-court .ldot{width:7px;height:7px;border-radius:50%;background:var(--coral);animation:pulse 1.4s infinite;}
-.live-card .lc-teams{font-size:13px;font-weight:600;}
-.live-card .lc-teams .vs{color:var(--ink-soft);font-weight:400;font-size:11px;display:block;margin:2px 0;}
-.live-card .lc-teams .tcode{display:inline-block;border:1.3px solid var(--coral);border-radius:6px;padding:1px 7px;font-family:'JetBrains Mono',monospace;font-weight:800;font-size:11.5px;color:var(--coral);background:rgba(198,59,90,.07);}
+.live-card .lc-teams{font-size:12px;font-weight:600;}
+.live-card .lc-teams .vs{color:var(--ink-soft);font-weight:400;font-size:10.5px;display:block;margin:2px 0;}
+.live-card .lc-teams .tcode{display:inline-block;border:1.3px solid var(--coral);border-radius:6px;padding:1px 6px;font-family:'JetBrains Mono',monospace;font-weight:800;font-size:11px;color:var(--coral);background:rgba(198,59,90,.07);}
 
 /* PLAYER MODAL */
 .ph-row{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:7px;font-size:13px;}
@@ -222,14 +233,15 @@ footer{padding:24px 0 40px;text-align:center;color:var(--ink-soft);font-size:12p
     <div class="ribbon">League 2 · Main Stage</div>
     <div class="datebig">22–23 สิงหาคม 2569</div>
     <p class="sub">📍 สนามสุพรรณแบดมินตัน</p>
-    <div class="stat-row">
-      <div class="stat"><div class="num mono">08:30</div><div class="lbl">เริ่มแข่งขัน</div></div>
-      <div class="stat"><div class="num mono">8</div><div class="lbl">สนามแข่งขัน</div></div>
-      <div class="stat"><div class="num mono">6</div><div class="lbl">ประเภทมือ</div></div>
-      <div class="stat"><div class="num mono">176</div><div class="lbl">คู่ทั้งหมด</div></div>
-    </div>
   </div>
 </div>
+
+<section style="padding-top:0;padding-bottom:0;">
+  <div class="wrap">
+    <div class="section-head"><h2>🔴 กำลังแข่งขันอยู่ตอนนี้</h2><div class="rule"></div></div>
+    <div class="live-wrap" id="live-wrap"><div class="empty-note">กำลังโหลด...</div></div>
+  </div>
+</section>
 
 <section style="padding-top:0;">
   <div class="wrap">
@@ -263,13 +275,6 @@ footer{padding:24px 0 40px;text-align:center;color:var(--ink-soft);font-size:12p
 
 <section style="padding-top:0;">
   <div class="wrap">
-    <div class="section-head"><h2>🔴 กำลังแข่งขันอยู่ตอนนี้</h2><div class="rule"></div></div>
-    <div class="live-wrap" id="live-wrap"><div class="empty-note">กำลังโหลด...</div></div>
-  </div>
-</section>
-
-<section>
-  <div class="wrap">
     <div class="section-head"><h2>ประเภทมือ — แตะเพื่อดูตาราง</h2><div class="rule"></div></div>
     <div class="cat-grid" id="cat-grid"></div>
   </div>
@@ -284,6 +289,7 @@ footer{padding:24px 0 40px;text-align:center;color:var(--ink-soft);font-size:12p
     </div>
     <div class="sched-meta">
       <span id="sched-status">กำลังโหลด...</span>
+      <select id="match-jump" class="jump-select"><option value="">ไปที่แมทช์...</option></select>
       <button class="refresh-btn" id="refresh-btn">↻ รีเฟรช</button>
     </div>
     <div class="sched-list" id="sched-list"><div class="empty-note">กำลังโหลดข้อมูล...</div></div>
@@ -303,6 +309,7 @@ footer{padding:24px 0 40px;text-align:center;color:var(--ink-soft);font-size:12p
       <button class="mtab" data-mtab="ko">น็อคเอาท์</button>
       <button class="mtab" data-mtab="prize">เงินรางวัล</button>
     </div>
+    <div class="tap-hint" id="tap-hint">👆 กดชื่อ เพื่อดูตารางแข่งขัน</div>
     <div class="modal-body" id="modal-body"></div>
   </div>
 </div>
@@ -525,6 +532,15 @@ function lookupTeam(cat, code){
   const key = String(code).trim();
   return (stand.byE && stand.byE[key]) || (stand.byD && stand.byD[key]) || null;
 }
+/* full name primary, nickname in parens (e.g. "สมชาย ใจดี (ตูน)") — falls back to
+   whichever field is present. Also returns a "::"-joined key so pname clicks can
+   match a schedule row by either the full name or the nickname. */
+function personLabel(full, nick){
+  if(!full && !nick) return null;
+  const label = full ? (nick && nick!==full ? `${full} (${nick})` : full) : nick;
+  const key = [nick,full].filter(Boolean).join('::');
+  return {label, key};
+}
 function teamHtml(m, which){
   const winner = matchResult(m);
   const code = teamCode(m, which);
@@ -535,14 +551,19 @@ function teamHtml(m, which){
   if(isPlaceholder){
     return `<span class="team-block tbd"><span class="tcode">รอผลการแข่งขัน</span></span>`;
   }
-  let players = teamPlayers(m, which);
-  if(players.length===0 && info){
-    players = [info.p1nick||info.p1, info.p2nick||info.p2].filter(Boolean);
+  const schedPlayers = teamPlayers(m, which);
+  let pHtml;
+  if(schedPlayers.length){
+    pHtml = `<span class="proster">${schedPlayers.map(p=>`<span class="pname" data-player="${esc(p)}">${esc(p)}</span>`).join('<span class="psep">/</span>')}</span>`;
+  } else if(info){
+    const pInfo = [personLabel(info.p1,info.p1nick), personLabel(info.p2,info.p2nick)].filter(Boolean);
+    pHtml = pInfo.length
+      ? `<span class="proster">${pInfo.map(p=>`<span class="pname" data-player="${esc(p.key)}">${esc(p.label)}</span>`).join('<span class="psep">/</span>')}</span>`
+      : '';
+  } else {
+    pHtml = '';
   }
   const nameHtml = info && info.team ? `<span class="tname">${esc(info.team)}</span>` : '';
-  const pHtml = players.length
-    ? `<span class="proster">${players.map(p=>`<span class="pname" data-player="${esc(p)}">${esc(p)}</span>`).join('<span class="psep">/</span>')}</span>`
-    : '';
   const winClass = winner===which ? ' win' : (winner===3 ? ' draw' : '');
   return `<span class="team-block${winClass}"><span class="tcode">${esc(code||'-')}</span>${nameHtml}${pHtml}</span>`;
 }
@@ -632,7 +653,7 @@ function renderCatGrid(){
       <h3 style="color:${c.ink}">${cat}</h3>
       <div class="teams">${info.teams} ทีม</div>
       <div class="prize1">🏆 ${prize}</div>
-      <div class="tapview">แตะเพื่อดูตาราง →</div>
+      <div class="tapview">แตะเพื่อดูตาราง <span class="arrow">→</span></div>
     </button>`;
   }).join('');
   grid.querySelectorAll('.cat-card').forEach(btn=>{
@@ -647,10 +668,28 @@ function renderSchedule(){
   const matches = cache.sched[currentDay];
   if(!matches || matches.length===0){ list.innerHTML='<div class="empty-note">ไม่พบข้อมูล หรือยังโหลดไม่เสร็จ</div>'; return; }
   list.innerHTML = matches.map(m=>`
-    <div class="sched-row${matchResult(m)!==0? ' played':''}">
+    <div class="sched-row${matchResult(m)!==0? ' played':''}" id="match-${esc(m.no)}">
       <div class="r1"><span>#${m.no} · ${esc(m.round)}${m.estTime? ' ('+esc(m.estTime)+')':''}</span><span>${m.time? m.time+' น.':'เวลา TBD'} ${m.court? '· สนาม '+esc(m.court):''}</span></div>
       <div class="r2">${pillHtml(m.hand)} ${teamHtml(m,1)} <span class="vs">vs</span> ${teamHtml(m,2)} <span style="margin-left:auto" class="mono">${scoreLabel(m)}</span></div>
     </div>`).join('');
+  renderMatchJump(matches);
+}
+/* populate the "jump to match" dropdown with chunked ranges (1-50, 51-100, ...)
+   sized off the actual match numbers present, so people chasing e.g. match #150
+   can jump straight there instead of scrolling through the whole day. */
+function renderMatchJump(matches){
+  const sel = document.getElementById('match-jump');
+  const nums = matches.map(m=>Number(m.no)).filter(n=>!isNaN(n));
+  if(nums.length===0){ sel.innerHTML = '<option value="">ไปที่แมทช์...</option>'; return; }
+  const max = Math.max(...nums);
+  const CHUNK = 50;
+  let opts = '<option value="">ไปที่แมทช์...</option>';
+  for(let start=1; start<=max; start+=CHUNK){
+    const end = Math.min(start+CHUNK-1, max);
+    const firstInRange = matches.find(m=>Number(m.no)>=start && Number(m.no)<=end);
+    if(firstInRange) opts += `<option value="${esc(firstInRange.no)}">แมทช์ที่ ${start}-${end}</option>`;
+  }
+  sel.innerHTML = opts;
 }
 
 /* ---------- render: live courts ---------- */
@@ -695,14 +734,15 @@ function renderLiveCourts(){
     const col = hand ? catColor(hand) : {ink:'#C63B5A'};
     const t1players = [c.t1p1,c.t1p2].filter(Boolean).join(' / ');
     const t2players = [c.t2p1,c.t2p2].filter(Boolean).join(' / ');
+    const matchInfo = found ? `${esc(found.round)} : แมทช์ #${esc(c.matchCode)}` : (c.matchCode? `แมทช์ #${esc(c.matchCode)}` : '');
     return `<div class="live-card" style="border-color:${col.ink}">
-      <div class="lc-court"><span class="ldot"></span>สนาม ${esc(c.court)} ${hand? '· '+pillHtml(hand) : ''}</div>
+      ${hand||matchInfo ? `<div class="lc-cat">${hand? pillHtml(hand):''} ${esc(matchInfo)}</div>` : ''}
+      <div class="lc-court"><span class="ldot"></span>สนาม ${esc(c.court)}</div>
       <div class="lc-teams">
         <span class="tcode">${esc(c.t1code||'-')}</span> ${esc(t1players)}
         <span class="vs">vs</span>
         <span class="tcode">${esc(c.t2code||'-')}</span> ${esc(t2players)}
       </div>
-      ${found? `<div style="font-size:10.5px;color:var(--ink-soft);margin-top:5px;">${esc(found.round)} · แมทช์ #${esc(c.matchCode)}</div>` : (c.matchCode?`<div style="font-size:10.5px;color:var(--ink-soft);margin-top:5px;">แมทช์ #${esc(c.matchCode)}</div>`:'')}
     </div>`;
   }).join('');
 }
@@ -747,6 +787,10 @@ function openModal(cat){
   modalTab='group';
   document.querySelectorAll('.mtab').forEach(b=>b.classList.toggle('active', b.dataset.mtab==='group'));
   renderModalBody(cat);
+  const hint = document.getElementById('tap-hint');
+  hint.classList.remove('hide');
+  clearTimeout(window.__hintTimer);
+  window.__hintTimer = setTimeout(()=> hint.classList.add('hide'), 4500);
 }
 function closeModal(){ document.getElementById('modal-bg').classList.remove('open'); }
 function renderModalBody(cat){
@@ -898,6 +942,13 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   document.getElementById('search-input').addEventListener('input', e=>runSearch(e.target.value));
   document.getElementById('refresh-btn').addEventListener('click', loadAll);
+  document.getElementById('match-jump').addEventListener('change', e=>{
+    const no = e.target.value;
+    if(!no) return;
+    const el = document.getElementById('match-'+no);
+    if(el) el.scrollIntoView({behavior:'smooth', block:'center'});
+    e.target.value = '';
+  });
   document.getElementById('modal-close').addEventListener('click', closeModal);
   document.getElementById('modal-bg').addEventListener('click', e=>{ if(e.target.id==='modal-bg') closeModal(); });
   document.getElementById('player-close').addEventListener('click', closePlayerModal);
@@ -906,7 +957,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   // event delegation: clicking any player name anywhere opens the player-history modal
   document.body.addEventListener('click', e=>{
     const el = e.target.closest('.pname');
-    if(el){ openPlayerModal(el.dataset.player); }
+    if(el){ openPlayerModal(el.dataset.player); document.getElementById('tap-hint').classList.add('hide'); }
   });
 
   document.querySelectorAll('.mtab').forEach(btn=>{
