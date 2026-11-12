@@ -259,10 +259,10 @@ footer{padding:24px 0 40px;text-align:center;color:var(--ink-soft);font-size:12p
       </div>
     </div>
     <div class="rule-grid compact">
-      <div class="rule-card"><h3>การเสริฟ</h3><p>มือ BG / NB / N เสริฟหลังได้เฉพาะ Forehand เท่านั้น ห้ามเสริฟยิงและห้ามเสริฟ 2 จังหวะ</p></div>
-      <div class="rule-card"><h3>รอบแบ่งกลุ่ม</h3><p>แข่งขัน 21 แต้ม 2 เซ็ท ไม่มีดิวส์ · ชนะ 3 คะแนน เสมอ 1 คะแนน แพ้ 0 คะแนน เรียงอันดับด้วยคะแนน แต้มได้เสีย และผลเจอกันตามลำดับ</p></div>
+      <div class="rule-card"><h3>การเสริฟ</h3><p>มือ Rookie / BG / NB / N เสริฟหลังได้เฉพาะ Forehand เท่านั้น ห้ามเสริฟยิงและห้ามเสริฟ 2 จังหวะ</p></div>
+      <div class="rule-card"><h3>รอบแบ่งกลุ่ม</h3><p>มือ NB / N / S / P- แข่งขัน 21 แต้ม 2 เซ็ท ไม่มีดิวส์ · ชนะ 3 คะแนน เสมอ 1 คะแนน แพ้ 0 คะแนน เรียงอันดับด้วยคะแนน แต้มได้เสีย และผลเจอกันตามลำดับ</p></div>
+      <div class="rule-card"><h3>รอบแบ่งกลุ่ม</h3><p>มือ Rookie / BG แข่งขัน 15 แต้ม 2 เซ็ท ไม่มีดิวส์ </p></div>
       <div class="rule-card"><h3>รอบ Knock Out</h3><p>แข่งขัน 21 แต้ม 2 ใน 3 เซ็ท ดิวได้สูงสุดถึง 30 แต้ม</p></div>
-      <div class="rule-card"><h3>ไม่แสดงตัว</h3><p>รอเวลา 10 นาที หากไม่มาถือว่าแพ้ทันที</p></div>
     </div>
   </div>
 </section>
@@ -345,7 +345,7 @@ const CAT_INFO = {
 function teamCountLabel(cat){
   const st = cache.stand[cat];
   const n = st && st.byE ? Object.keys(st.byE).length : 0;
-  return n ? n+' ทีม' : '';
+  return n ? n' ทีม' : '';
 }
 /* per-category color identity so hand-types are easy to tell apart at a glance
    (CVD-checked adjacent-pair set: blue/teal/orange/magenta/violet/amber) */
