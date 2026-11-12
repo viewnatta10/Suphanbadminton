@@ -345,7 +345,7 @@ const CAT_INFO = {
 function teamCountLabel(cat){
   const st = cache.stand[cat];
   const n = st && st.byE ? Object.keys(st.byE).length : 0;
-  return n ? n' ทีม' : '';
+  return n ? n+' ทีม' : '';
 }
 /* per-category color identity so hand-types are easy to tell apart at a glance
    (CVD-checked adjacent-pair set: blue/teal/orange/magenta/violet/amber) */
