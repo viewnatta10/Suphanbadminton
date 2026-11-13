@@ -359,6 +359,7 @@ footer{padding:24px 0 40px;text-align:center;color:var(--ink-soft);font-size:12p
       </ol>
       <p class="siri-note">ถ้าไม่เห็นเสียง Siri ภาษาไทยในรายการ ให้ไปที่ <b>การตั้งค่า → การช่วยการเข้าถึง → เนื้อหาที่พูด → เสียง → ไทย</b> แล้วดาวน์โหลดเสียง Siri ผู้ชายก่อน จากนั้นกลับไปเลือกในขั้นตอนที่ 5</p>
       <p class="siri-note">ตอนกด 🔊 ครั้งแรก iPhone จะถามว่าอนุญาตให้เปิด "คำสั่งลัด" ไหม ให้กด <b>เปิด</b> พออ่านจบ iPhone จะพากลับมาที่หน้าเว็บนี้เอง</p>
+      <p class="siri-note">ชื่อภาษาอังกฤษที่ Siri อ่านไม่ชัด ผู้จัดเพิ่มคำอ่านภาษาไทยได้ในแท็บ <b>คำอ่าน</b> ของ Google Sheet (คอลัมน์ A = ชื่อตามที่เขียน, คอลัมน์ B = คำอ่านภาษาไทย)</p>
       <button class="siri-go" id="siri-done">✅ สร้างเสร็จแล้ว ทดสอบเสียงเลย</button>
     </div>
   </div>
@@ -369,6 +370,9 @@ const SHEET_ID = '1PYMXv3Qyx57pK-pJg-ch14coRuGNIXpOs8G7JYTCwaY';
 const SCHED_SHEETS = {sat:'ตารางเวลา(วันเสาร์)', sun:'ตารางเวลา(วันอาทิตย์)'};
 const STAND_SHEETS = {NB:'สาย NB', N:'สาย N', 'P-':'สาย P-', Rookie:'สาย Rookie', BG:'สาย BG', S:'สาย S'};
 const COURTS_SHEET = 'สนามแข่งขัน';
+/* pronunciation tab: column A = name as written (English), column B = how to read it in Thai.
+   Row 1 is the header and column B's header must contain the word "อ่าน" (e.g. "คำเดิม | คำอ่าน"). */
+const SAY_SHEET = 'คำอ่าน';
 const CAT_INFO = {
   NB:{full:'Novice B', day:'sat', tag:'DAY 1'},
   S:{full:'Single', day:'sat', tag:'DAY 1'},
@@ -757,6 +761,48 @@ function spokenTeam(name, p1, p2){
   ps.forEach((p,i)=>{ if(i>0) out.push(S('และ')); out.push(S('คุณ'+p)); });
   return out;
 }
+/* ---------- pronunciation dictionary ----------
+   Siri / Thai voices read English names poorly, so names are swapped for a Thai spelling
+   before speaking. Add or fix words in the Google Sheet tab SAY_SHEET (no code change needed);
+   the list below is only a built-in starting point and the sheet always wins. */
+const SAY_DEFAULTS = [
+  ['Clarence Rowel M. de Guzman', 'คาเรน โรเวล เด กูสแม่น'],
+  ['Cheat day team', 'ชีสเดย์ทีม'],
+  ['Cheat day', 'ชีสเดย์'],
+  ['Peemdech', 'ภีมเดช'],
+  ['NB', 'เอ็นบี']
+];
+let __sayRules = [];
+function parseSayTable(table){
+  if(!table || !table.rows) return null;
+  const rows = table.rows.map(r=>[String(cellv(r,0)).trim(), String(cellv(r,1)).trim()]);
+  // guard: only trust a tab whose column-B header mentions "อ่าน" (Sheets can hand back a
+  // different tab when the name does not exist)
+  const label = table.cols && table.cols[1] && table.cols[1].label || '';
+  if(/อ่าน/.test(label)) return rows.filter(([a,b])=>a && b);
+  if(rows.length && /อ่าน/.test(rows[0][1])) return rows.slice(1).filter(([a,b])=>a && b);
+  return null;
+}
+function buildSayRules(){
+  const map = new Map();
+  [...SAY_DEFAULTS, ...(cache.say||[])].forEach(([a,b])=>{
+    const k = a.replace(/\s+/g,' ').trim();
+    if(k && b) map.set(k.toLowerCase(), {k, b});
+  });
+  // longest first, so a full name wins over a single word inside it
+  __sayRules = [...map.values()].sort((x,y)=>y.k.length-x.k.length).map(({k,b})=>{
+    const body = k.split(' ').map(w=>w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('\\s+');
+    return {re:new RegExp('(^|[^A-Za-z0-9])'+body+'(?![A-Za-z0-9])','gi'), b};
+  });
+}
+buildSayRules();
+function toSpoken(text){
+  let t = String(text);
+  if(!/[A-Za-z]/.test(t)) return t;
+  __sayRules.forEach(({re,b})=>{ t = t.replace(re, (m,pre)=>pre+b); });
+  return t;
+}
+
 function buildAnnouncement(c, found, n1, n2){
   const hand = found ? (SPOKEN_HAND[found.hand]||found.hand) : '';
   const seg = [L('ในสนามที่'), L(c.court)];
@@ -769,6 +815,7 @@ function buildAnnouncement(c, found, n1, n2){
   }
   seg.push(S('ระหว่าง'), ...spokenTeam(n1,c.t1p1,c.t1p2), S('พบกับ'), ...spokenTeam(n2,c.t2p1,c.t2p2));
   seg.push(L('ลงทำการแข่งขันในสนามที่'), {t:String(c.court), gap:0});
+  seg.forEach(x=>{ x.t = toSpoken(x.t); });
   return seg;
 }
 
@@ -1150,15 +1197,19 @@ async function loadStandSheet(name){
 async function loadAll(){
   document.getElementById('sched-status').textContent = 'กำลังโหลดข้อมูล...';
   const catKeys = Object.keys(STAND_SHEETS);
-  const [satT, sunT, courtsT, ...standResults] = await Promise.all([
+  const [satT, sunT, courtsT, sayT, ...standResults] = await Promise.all([
     loadSheet(SCHED_SHEETS.sat, 'A1:U260'),
     loadSheet(SCHED_SHEETS.sun, 'A1:U260'),
     loadSheet(COURTS_SHEET, 'A4:I11'),
+    loadSheet(SAY_SHEET, 'A1:B500'),
     ...catKeys.map(c=>loadStandSheet(STAND_SHEETS[c]))
   ]);
   cache.sched.sat = parseSchedule(satT, 'sat');
   cache.sched.sun = parseSchedule(sunT, 'sun');
   cache.courts = parseCourts(courtsT);
+  const say = parseSayTable(sayT);
+  if(say) cache.say = say;   // keep the last good list if the tab could not be read this time
+  buildSayRules();
   catKeys.forEach((c,i)=>{ cache.stand[c] = parseStandings(standResults[i]); });
 
   const ok = cache.sched.sat.length>0 || cache.sched.sun.length>0;
@@ -1186,6 +1237,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   tickClock(); setInterval(tickClock, 1000);
 
   if(loadCacheFromStorage()){
+    buildSayRules();
     document.getElementById('sched-status').textContent = 'แสดงข้อมูลล่าสุดที่บันทึกไว้ กำลังอัปเดต...';
     renderSchedule(); renderLiveCourts();
   }
