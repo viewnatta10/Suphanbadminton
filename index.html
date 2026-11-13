@@ -714,22 +714,83 @@ function renderMatchJump(matches){
 /* ---------- voice announcer (browser text-to-speech, no server needed) ---------- */
 window.__liveAnn = {};
 const SPOKEN_HAND = {NB:'เอ็นบี', N:'เอ็น', S:'เอส', 'P-':'พี ลบ', BG:'บีจี', Rookie:'รุกกี้'};
+/* announcements are spoken as a list of short phrases with a pause after each one,
+   matching the announcer's rhythm:  "///" = long pause, "//" = short pause */
+const PAUSE_LONG = 650, PAUSE_SHORT = 280;
+const L = t => ({t:String(t), gap:PAUSE_LONG});
+const S = t => ({t:String(t), gap:PAUSE_SHORT});
 function spokenTeam(name, p1, p2){
-  const ps = [p1,p2].filter(Boolean).map(p=>'คุณ'+p).join(' และ ');
-  return [name? 'ทีม '+name : '', ps].filter(Boolean).join(' ');
+  const out = [];
+  if(name) out.push(S('ทีม'), S(name));
+  const ps = [p1,p2].filter(Boolean);
+  ps.forEach((p,i)=>{ if(i>0) out.push(S('และ')); out.push(S('คุณ'+p)); });
+  return out;
 }
 function buildAnnouncement(c, found, n1, n2){
   const hand = found ? (SPOKEN_HAND[found.hand]||found.hand) : '';
-  const head = `ในสนามที่ ${c.court}` + (c.matchCode? ` แมทช์ที่ ${c.matchCode}`:'') +
-    (hand? ` มือ ${hand}`:'') + (found && found.round? ` รอบ ${found.round}`:'');
-  return `${head} ระหว่าง ${spokenTeam(n1,c.t1p1,c.t1p2)} พบกับ ${spokenTeam(n2,c.t2p1,c.t2p2)}`;
+  const seg = [L('ในสนามที่'), L(c.court)];
+  if(c.matchCode) seg.push(L('แมทช์ที่'), L(c.matchCode));
+  if(hand) seg.push(S('มือ'), S(hand));
+  if(found && found.round){
+    seg.push(S('รอบ'));
+    // "แบ่งกลุ่ม 1" -> "แบ่งกลุ่ม" // "1"
+    String(found.round).replace(/(\d+)/g,' $1 ').trim().split(/\s+/).forEach(w=>seg.push(S(w)));
+  }
+  seg.push(S('ระหว่าง'), ...spokenTeam(n1,c.t1p1,c.t1p2), S('พบกับ'), ...spokenTeam(n2,c.t2p1,c.t2p2));
+  seg.push(L('ลงทำการแข่งขันในสนามที่'), {t:String(c.court), gap:0});
+  return seg;
+}
+
+/* --- Thai male voice selection ---
+   Voices come from the visitor's device/browser, so we wait for speechSynthesis.getVoices()
+   to be populated, then pick a Thai voice that is known to be MALE. We never just take the
+   first Thai voice (on most devices that is a female voice) and never fake a male voice by
+   dropping the pitch of a female one. */
+const TH_MALE = [            // best first: deep, clear announcer-style male Thai voices
+  {re:/niwat.*(natural|online|neural)/i, score:100}, // Microsoft Niwat Online (Natural) – Edge
+  {re:/niwat/i,                          score:90},
+  {re:/pattara/i,                        score:80},  // Microsoft Pattara – Windows desktop
+  {re:/(^|[^a-z])male|ชาย|ผู้ชาย/i,       score:60}
+];
+const TH_FEMALE = /female|หญิง|premwadee|achara|kanya|narisa|google/i; // Google ภาษาไทย is female
+let __voices = [], __voicesReady = null;
+function loadVoices(){
+  if(!('speechSynthesis' in window)) return Promise.resolve([]);
+  if(__voicesReady) return __voicesReady;
+  __voicesReady = new Promise(resolve=>{
+    const done = ()=>{ const v = speechSynthesis.getVoices(); if(v.length){ __voices = v; resolve(v); return true; } return false; };
+    if(done()) return;
+    const onChange = ()=>{ if(done()) speechSynthesis.removeEventListener('voiceschanged', onChange); };
+    speechSynthesis.addEventListener('voiceschanged', onChange);
+    let tries = 0;  // some browsers (Safari) never fire voiceschanged — poll as a fallback
+    const iv = setInterval(()=>{ if(done() || ++tries > 30){ clearInterval(iv); resolve(__voices); } }, 100);
+  });
+  // when the voice list changes later (e.g. online voices arrive), keep it fresh
+  speechSynthesis.addEventListener('voiceschanged', ()=>{ const v = speechSynthesis.getVoices(); if(v.length) __voices = v; });
+  return __voicesReady;
 }
 function pickThaiVoice(){
-  if(!('speechSynthesis' in window)) return null;
-  const th = speechSynthesis.getVoices().filter(v=>/^th/i.test(v.lang) || /thai|ไทย/i.test(v.name));
-  const male = th.find(v=>/pattara|niwat|male|ชาย/i.test(v.name));
-  return {voice: male || th[0] || null, isMale: !!male};
+  if(!('speechSynthesis' in window)) return {voice:null, isMale:false, hasThai:false};
+  if(!__voices.length) __voices = speechSynthesis.getVoices();
+  const th = __voices.filter(v=>/^th([-_]|$)/i.test(v.lang) || /thai|ไทย/i.test(v.name));
+  let best = null, bestScore = 0;
+  th.forEach(v=>{
+    const rule = TH_MALE.find(r=>r.re.test(v.name));
+    if(!rule || TH_FEMALE.test(v.name)) return;
+    const s = rule.score + (v.localService ? 0 : 1); // tie-break: cloud voices sound more natural
+    if(s > bestScore){ best = v; bestScore = s; }
+  });
+  return {voice: best, isMale: !!best, hasThai: th.length>0, thaiVoices: th};
 }
+/* type  listThaiVoices()  in the browser console to see what this device offers */
+window.listThaiVoices = function(){
+  return loadVoices().then(()=>{
+    const r = pickThaiVoice();
+    console.table((r.thaiVoices||[]).map(v=>({name:v.name, lang:v.lang, local:v.localService,
+      male: TH_MALE.some(x=>x.re.test(v.name)) && !TH_FEMALE.test(v.name), selected: v===r.voice})));
+    return r.voice ? r.voice.name : null;
+  });
+};
 function toast(msg){
   let t = document.getElementById('toast');
   if(!t){ t = document.createElement('div'); t.id='toast'; document.body.appendChild(t); }
@@ -737,27 +798,69 @@ function toast(msg){
   clearTimeout(window.__toastTimer);
   window.__toastTimer = setTimeout(()=>t.classList.remove('show'), 3500);
 }
-function speakCourt(court, btn){
-  if(!('speechSynthesis' in window)){ toast('เบราว์เซอร์นี้ไม่รองรับเสียงประกาศ'); return; }
-  if(speechSynthesis.speaking && btn && btn.classList.contains('speaking')){
-    speechSynthesis.cancel(); btn.classList.remove('speaking'); return;
-  }
-  speechSynthesis.cancel();
+let __annRun = 0, __annTimer = null;
+const __annAudio = (typeof Audio!=='undefined') ? new Audio() : null;
+let __cloudTTS = null;  // null = unknown, true/false once /api/tts has answered
+fetch('/api/tts').then(r=>r.ok? r.json():{enabled:false}).then(j=>{ __cloudTTS = !!j.enabled; }).catch(()=>{ __cloudTTS = false; });
+function stopAnnouncement(){
+  __annRun++; clearTimeout(__annTimer);
+  if('speechSynthesis' in window) speechSynthesis.cancel();
+  if(__annAudio){ __annAudio.pause(); __annAudio.removeAttribute('src'); }
   document.querySelectorAll('.lc-speak.speaking').forEach(b=>b.classList.remove('speaking'));
-  const text = window.__liveAnn[court];
-  if(!text) return;
-  const pv = pickThaiVoice();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'th-TH';
-  u.rate = 0.85;                       // slower = clearer in a noisy hall
-  u.volume = 1;
-  if(pv && pv.voice){ u.voice = pv.voice; u.pitch = pv.isMale ? 0.9 : 0.6; }
-  else { u.pitch = 0.6; toast('เครื่องนี้ไม่มีเสียงภาษาไทยติดตั้งไว้ เสียงอาจไม่ชัด'); }
-  u.onstart = ()=> btn && btn.classList.add('speaking');
-  u.onend = u.onerror = ()=> btn && btn.classList.remove('speaking');
-  speechSynthesis.speak(u);
 }
-if('speechSynthesis' in window){ speechSynthesis.getVoices(); speechSynthesis.onvoiceschanged = ()=>{}; }
+function speakCourt(court, btn){
+  if(btn && btn.classList.contains('speaking')){ stopAnnouncement(); return; }
+  stopAnnouncement();
+  const segs = window.__liveAnn[court];
+  if(!segs || !segs.length) return;
+  const run = __annRun;
+  btn && btn.classList.add('speaking');
+  // no cloud voice configured -> speak right away inside the tap (iOS blocks delayed speech)
+  if(__cloudTTS === false){ speakWithBrowser(segs, btn); return; }
+  if(__annAudio){ __annAudio.muted = true; __annAudio.play().catch(()=>{}); __annAudio.muted = false; } // unlock audio inside the tap (iOS)
+  // 1st choice: male Thai announcer voice from the server (Azure th-TH-NiwatNeural)
+  fetch('/api/tts', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({segments:segs})})
+    .then(r=>{ if(!r.ok) throw new Error('tts '+r.status); return r.blob(); })
+    .then(blob=>{
+      if(run!==__annRun) return;
+      const url = URL.createObjectURL(blob);
+      __annAudio.src = url;
+      __annAudio.onended = __annAudio.onerror = ()=>{ URL.revokeObjectURL(url); if(run===__annRun) btn && btn.classList.remove('speaking'); };
+      return __annAudio.play();
+    })
+    .catch(()=>{ if(run===__annRun) speakWithBrowser(segs, btn); });
+}
+// fallback: the device's own Thai voice (male only if the device has one, e.g. Edge "Niwat")
+function speakWithBrowser(segs, btn){
+  if(!('speechSynthesis' in window)){ btn && btn.classList.remove('speaking'); toast('เบราว์เซอร์นี้ไม่รองรับเสียงประกาศ'); return; }
+  if(__voices.length || speechSynthesis.getVoices().length) runAnnouncement(segs, btn);
+  else loadVoices().then(()=>runAnnouncement(segs, btn));
+}
+function runAnnouncement(segs, btn){
+  const run = ++__annRun;
+  const pv = pickThaiVoice();
+  if(!pv.hasThai) toast('เครื่องนี้ไม่มีเสียงภาษาไทยติดตั้งไว้ เสียงอาจไม่ชัด');
+  else if(!pv.isMale) toast('เครื่องนี้ไม่มีเสียงผู้ชายภาษาไทย — แนะนำเปิดด้วย Microsoft Edge เพื่อใช้เสียง Niwat');
+  btn && btn.classList.add('speaking');
+  const finish = ()=>{ if(run===__annRun) btn && btn.classList.remove('speaking'); };
+  let i = 0;
+  const next = ()=>{
+    if(run!==__annRun) return;
+    if(i >= segs.length){ finish(); return; }
+    const seg = segs[i++];
+    const u = new SpeechSynthesisUtterance(seg.t);
+    u.lang = 'th-TH';
+    if(pv.voice) u.voice = pv.voice;   // male Thai voice; otherwise the browser's Thai default
+    u.rate = 0.9;                      // steady, clear announcer pace for a noisy hall
+    u.pitch = 1;                       // natural pitch — no artificial lowering
+    u.volume = 1;
+    u.onend = ()=>{ if(run===__annRun) __annTimer = setTimeout(next, seg.gap); };
+    u.onerror = e=>{ if(e.error!=='interrupted' && e.error!=='canceled') u.onend(); else finish(); };
+    speechSynthesis.speak(u);
+  };
+  next();
+}
+loadVoices();
 
 /* ---------- render: live courts ---------- */
 /* ---------- parse live-courts sheet "สนามแข่งขัน" ----------
