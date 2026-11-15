@@ -301,8 +301,8 @@ footer{padding:24px 0 40px;text-align:center;color:var(--ink-soft);font-size:12p
   <div class="wrap">
     <div class="section-head"><h2>ตารางเวลาแข่งขัน</h2><div class="rule"></div></div>
     <div class="tabbar" id="day-tabs">
-      <button class="tabbtn active" data-day="sat">เสาร์ 14 พ.ย.</button>
-      <button class="tabbtn" data-day="sun">อาทิตย์ 15 พ.ย.</button>
+      <button class="tabbtn active" data-day="sun">อาทิตย์ 15 พ.ย.</button>
+      <button class="tabbtn" data-day="sat">เสาร์ 14 พ.ย.</button>
     </div>
     <div class="sched-meta">
       <span id="sched-status">กำลังโหลด...</span>
@@ -716,7 +716,7 @@ function renderCatGrid(){
 }
 
 /* ---------- render: schedule list ---------- */
-let currentDay = 'sat';
+let currentDay = 'sun';
 function renderSchedule(){
   const list = document.getElementById('sched-list');
   const matches = cache.sched[currentDay];
